@@ -1,7 +1,9 @@
 import tensorflow as tf
+import matplotlib.pyplot as plt
 from tensorflow.keras.layers import Dense, Input, Dropout, Flatten, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.keras.datasets import fashion_mnist
+from tensorflow.keras import backend as K
 import random
 import numpy as np
 
@@ -20,6 +22,15 @@ def initialize_base_network():
 
     return Model(inputs=input_layer, outputs=x)
 
+def euclidian_distance(vects):
+    x, y = vects
+    sum_square = K.sum(K.square(x - y), axis=1, keepdims=True)
+    return K.sqrt(K.maximum(sum_square, K.epsilon()))
+
+def eucl_dist_output_shape(shapes):
+    shape1, shape2 = shapes
+    return (shape1[0], 1)
+
 
 def create_pairs(x, digit_indices):
     """Positive and negative pair creation.
@@ -33,7 +44,7 @@ def create_pairs(x, digit_indices):
         for i in range(n):
             z1, z2 = digit_indices[d][i], digit_indices[d][i + 1]
             pairs += [[x[z1], x[z2]]]
-            inc = random.randomrange(1, 10)
+            inc = random.randrange(1, 10)
             dn = (d + inc) % 10
             z1, z2 = digit_indices[d][i], digit_indices[dn][i]
             pairs += [[x[z1], x[z2]]]
@@ -49,12 +60,25 @@ def create_pairs_on_set(images, labels):
 
     return pairs, y
 
+def show_image(image):
+    plt.figure()
+    plt.imshow(image)
+    plt.colorbar()
+    plt.grid(False)
+    plt.show()
+
 
 def main():
     (train_img, train_lb), (test_img, test_lb) = fashion_mnist.load_data()
     train_img = train_img / 255.
     test_img = test_img / 255.
+    tr_pairs, tr_y = create_pairs_on_set(train_img, train_lb)
+    ts_pairs, ts_y = create_pairs_on_set(test_img, test_lb)
 
+    # pequeno teste de exibição
+    this_pair = 8
+    show_image(ts_pairs[this_pair][0])
+    show_image(ts_pairs[this_pair][1])
 
 if __name__ == "__main__":
     main()
